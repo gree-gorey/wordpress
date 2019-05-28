@@ -42,13 +42,12 @@ spec:
         env:
           {{- toYaml .Values.env | nindent 10 }}
         volumeMounts:
-        - name: app-database-secret
-          mountPath: /app/config/database.yml
-          subPath: database.yml
+        - name: nfs
+          mountPath: /data
       volumes:
-      - name: app-database-secret
-        secret:
-          secretName: app-database-secret
+      - name: nfs
+        persistentVolumeClaim:
+          claimName: {{ template "app.name" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
