@@ -1,0 +1,16 @@
+nfs-server-provisioner:
+  nameOverride: nfs
+  replicaCount: 1
+
+  persistence:
+    enabled: true
+    storageClass: "hostpath"
+    size: 2Gi
+
+  resources:
+    limits:
+     cpu: 100m
+     memory: 128Mi
+    requests:
+     cpu: 100m
+     memory: 128Mi
