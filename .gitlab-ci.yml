@@ -1,22 +1,68 @@
-image: alpine:3.8
+image: greegorey/ci:1.0.0
 
 stages:
+  - build
   - helm lint
+  - apply namespace
+  - deploy nfs
   - deploy db
   - deploy wp
 
+build ci image:
+  stage: build
+  script:
+    - docker build
+    - docker push
+
+build wp image:
+  stage: build
+  script:
+    - docker build
+    - docker push
+
 helm lint:
+  stage: helm lint
   script:
     - helm lint charts/*
+
+# we use here secret Gitlab variables:
+# - KUBECONFIG_B64
+.k8s: &k8s
+  before_script:
+    - echo $KUBECONFIG_B64 | base64 --decode > ~/.kube/config
+
+apply namespace:
+  stage: apply namespace
+  <<: *k8s
+  script:
+    - kubectl apply
+      --filename namespace.yaml
+
+# TODO:
+# - kubectl rollout status --namespace kube-system statefulset/nfs --watch
+deploy nfs:
+  stage: deploy nfs
+  <<: *k8s
+  script:
+    - helm template
+      --name nfs
+      --namespace kube-system
+      charts/nfs-server-provisioner >
+      templated.yaml
+    - kubectl apply
+      --namespace kube-system
+      --filename templated.yaml
 
 # we use here secret Gitlab variables:
 # - ROOT_PASSWORD
 # - REPLICATION_PASSWORD
 #
 # TODO:
-# - kubectl rollout status statefulset/mariadb-master --watch
-# - kubectl rollout status statefulset/mariadb-slave --watch
+# - kubectl rollout status --namespace wp statefulset/mariadb-master --watch
+# - kubectl rollout status --namespace wp statefulset/mariadb-slave --watch
 deploy db:
+  stage: deploy db
+  <<: *k8s
   script:
     - helm template
       --name mariadb
@@ -30,6 +76,8 @@ deploy db:
       --filename templated.yaml
 
 deploy wp:
+  stage: deploy wp
+  <<: *k8s
   script:
     - helm template
       --name wordpress
