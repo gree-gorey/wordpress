@@ -1,0 +1,41 @@
+image: alpine:3.8
+
+stages:
+  - helm lint
+  - deploy db
+  - deploy wp
+
+helm lint:
+  script:
+    - helm lint charts/*
+
+# we use here secret Gitlab variables:
+# - ROOT_PASSWORD
+# - REPLICATION_PASSWORD
+#
+# TODO:
+# - kubectl rollout status statefulset/mariadb-master --watch
+# - kubectl rollout status statefulset/mariadb-slave --watch
+deploy db:
+  script:
+    - helm template
+      --name mariadb
+      --namespace wp
+      --set mariadb.rootUser.password=$ROOT_PASSWORD
+      --set mariadb.replication.password=$REPLICATION_PASSWORD
+      charts/mariadb >
+      templated.yaml
+    - kubectl apply
+      --namespace wp
+      --filename templated.yaml
+
+deploy wp:
+  script:
+    - helm template
+      --name wordpress
+      --namespace wp
+      charts/wordpress >
+      templated.yaml
+    - kubectl apply
+      --namespace wp
+      --filename templated.yaml
