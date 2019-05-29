@@ -1,10 +1,17 @@
 replicaCount: 1
 
 image:
-  repository: wordpress
-  tag: latest
+  repository: greegorey/wordpress
+  tag: 1.0.0
+  pullPolicy: IfNotPresent
+  # repository: wordpress
+  # tag: latest
   # tag: 5.2.1-php7.1-fpm-alpine
   # tag: 5.2.1-php7.3-fpm
+
+nginxImage:
+  repository: nginx
+  tag: 1.15-alpine
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -35,7 +42,7 @@ db:
   host: mariadb:3306
   user: wordpress
   password:
-  tablePrefix: wordpress
+  tablePrefix: "wp_"
 
 resources:
   limits:

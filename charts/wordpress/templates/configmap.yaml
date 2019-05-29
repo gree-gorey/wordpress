@@ -6,4 +6,4 @@ metadata:
     app: {{ template "app.name" . }}
     release: {{ .Release.Name }}
 data:
-{{ (.Files.Glob "php/*").AsConfig | indent 2 }}
+{{ (.Files.Glob "config/*").AsConfig | indent 2 }}

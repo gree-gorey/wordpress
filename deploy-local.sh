@@ -57,7 +57,7 @@ helm template \
   --name wp \
   --namespace wp \
   --set db.password=$USER_PASSWORD \
-  charts/wordpress > \
+  charts/wordpress  > \
   templated.yaml
 kubectl apply -n wp -f templated.yaml
 end

@@ -26,17 +26,23 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
-        - name: http
-          containerPort: 80
+        - name: fpm
+          containerPort: 9000
           protocol: TCP
-        # livenessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: http
-        # readinessProbe:
-        #   httpGet:
-        #     path: /
-        #     port: http
+        livenessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /index.php
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         env:
@@ -56,21 +62,47 @@ spec:
         - name: WORDPRESS_TABLE_PREFIX
           value: {{ .Values.db.tablePrefix }}
         volumeMounts:
-        - name: nfs
-          # mountPath: /var/www/html
-          mountPath: /dummy
-        - name: php
-          # mountPath: /var/www/html/wp-admin/install.php
-          mountPath: /dummy.php
-          subPath: install.php
+        - name: shared
+          mountPath: /var/www/html
+        # TODO
+        # - name: nfs
+        #   mountPath: /var/www/html
+        lifecycle:
+          postStart:
+            exec:
+              command:
+              - "/bin/sh"
+              - "-c"
+              - "cp -r /wp-files/* /var/www/html/"
+      - name: nginx
+        image: "{{ .Values.nginxImage.repository }}:{{ .Values.nginxImage.tag }}"
+        imagePullPolicy: {{ .Values.nginxImage.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 80
+        readinessProbe:
+          tcpSocket:
+            port: 80
+        volumeMounts:
+        - name: shared
+          mountPath: /var/www/html
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
       volumes:
-      - name: nfs
-        persistentVolumeClaim:
-          claimName: {{ template "app.name" . }}
-      - name: php
+      # TODO
+      # - name: nfs
+      #   persistentVolumeClaim:
+      #     claimName: {{ template "app.name" . }}
+      - name: config
         configMap:
-          defaultMode: 484
           name: {{ template "app.name" . }}
+      - name: shared
+        emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
