@@ -19,11 +19,11 @@ mariadb:
       size: 2Gi
     resources:
       limits:
-        cpu: 300m
-        memory: 512Mi
+        cpu: 100m
+        memory: 256Mi
       requests:
-        cpu: 300m
-        memory: 512Mi
+        cpu: 100m
+        memory: 256Mi
 
   slave:
     replicas: 2
@@ -33,18 +33,18 @@ mariadb:
       size: 2Gi
     resources:
       limits:
-        cpu: 200m
+        cpu: 100m
         memory: 256Mi
       requests:
-        cpu: 200m
+        cpu: 100m
         memory: 256Mi
 
   metrics:
     enabled: true
     resources:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        memory: 64Mi
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 50m
+        memory: 64Mi

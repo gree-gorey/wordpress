@@ -22,14 +22,23 @@ end() {
 # kubectl apply -f namespace.yaml
 # end
 
-msg "Deploying nfs server..."
+msg "Deploying metrics-server..."
 helm template \
-  --name nfs \
+  --name metrics-server \
   --namespace kube-system \
-  charts/nfs-server-provisioner > \
+  charts/metrics-server > \
   templated.yaml
 kubectl apply -n kube-system -f templated.yaml
 end
+
+# msg "Deploying nfs server..."
+# helm template \
+#   --name nfs \
+#   --namespace kube-system \
+#   charts/nfs-server-provisioner > \
+#   templated.yaml
+# kubectl apply -n kube-system -f templated.yaml
+# end
 
 # msg "Deploying db..."
 # helm template \
