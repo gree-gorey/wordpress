@@ -28,9 +28,12 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-# env:
-# - name: RAILS_ENV
-#   value: development
+db:
+  name: wordpress
+  host: mariadb
+  user: wordpress
+  password:
+  tablePrefix: wordpress
 
 resources:
   limits:

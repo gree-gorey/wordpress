@@ -3,7 +3,7 @@ mariadb:
     password:
 
   db:
-    user: wp
+    user: wordpress
     password:
     name: wordpress
 
