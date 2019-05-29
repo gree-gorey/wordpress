@@ -40,23 +40,37 @@ spec:
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         env:
+        - name: WORDPRESS_DEBUG
+          value: "1"
         - name: WORDPRESS_DB_HOST
           value: {{ .Values.db.host }}
         - name: WORDPRESS_DB_USER
           value: {{ .Values.db.user }}
         - name: WORDPRESS_DB_PASSWORD
-          value: {{ .Values.db.password }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "app.name" . }}
+              key: dbPassword
         - name: WORDPRESS_DB_NAME
           value: {{ .Values.db.name }}
         - name: WORDPRESS_TABLE_PREFIX
           value: {{ .Values.db.tablePrefix }}
         volumeMounts:
         - name: nfs
-          mountPath: /var/www/html
+          # mountPath: /var/www/html
+          mountPath: /dummy
+        - name: php
+          # mountPath: /var/www/html/wp-admin/install.php
+          mountPath: /dummy.php
+          subPath: install.php
       volumes:
       - name: nfs
         persistentVolumeClaim:
           claimName: {{ template "app.name" . }}
+      - name: php
+        configMap:
+          defaultMode: 484
+          name: {{ template "app.name" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

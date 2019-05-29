@@ -2,7 +2,9 @@ replicaCount: 1
 
 image:
   repository: wordpress
-  tag: 5.2.1-php7.1-fpm-alpine
+  tag: latest
+  # tag: 5.2.1-php7.1-fpm-alpine
+  # tag: 5.2.1-php7.3-fpm
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -30,7 +32,7 @@ ingress:
 
 db:
   name: wordpress
-  host: mariadb
+  host: mariadb:3306
   user: wordpress
   password:
   tablePrefix: wordpress

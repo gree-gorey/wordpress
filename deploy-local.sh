@@ -40,14 +40,24 @@ end() {
 # kubectl apply -n kube-system -f templated.yaml
 # end
 
-msg "Deploying db..."
+# msg "Deploying db..."
+# helm template \
+#   --name mariadb \
+#   --namespace wp \
+#   --set mariadb.rootUser.password=$ROOT_PASSWORD \
+#   --set mariadb.db.password=$USER_PASSWORD \
+#   --set mariadb.replication.password=$REPLICATION_PASSWORD \
+#   charts/mariadb > \
+#   templated.yaml
+# kubectl apply -n wp -f templated.yaml
+# end
+
+msg "Deploying wp..."
 helm template \
-  --name mariadb \
+  --name wp \
   --namespace wp \
-  --set mariadb.rootUser.password=$ROOT_PASSWORD \
-  --set mariadb.db.password=$USER_PASSWORD \
-  --set mariadb.replication.password=$REPLICATION_PASSWORD \
-  charts/mariadb > \
+  --set db.password=$USER_PASSWORD \
+  charts/wordpress > \
   templated.yaml
 kubectl apply -n wp -f templated.yaml
 end

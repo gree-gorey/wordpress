@@ -8,13 +8,13 @@ spec:
     kind: Deployment
     name: wordpress
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 5
   metrics:
   - type: Resource
     resource:
       name: cpu
       targetAverageUtilization: 70
-  - type: Pods
-    pods:
-      metricName: wordpress_latency_ms
-      targetAverageValue: 90
+  # - type: Pods
+  #   pods:
+  #     metricName: wordpress_latency_ms
+  #     targetAverageValue: 90

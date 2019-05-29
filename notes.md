@@ -19,3 +19,9 @@ Metrics:
 https://github.com/hipages/php-fpm_exporter
 
 wordpress_files:/var/www/html
+
+10Mil
+
+for($i = 0; $i < 10000000; $i++) {
+     $a += $i;
+}
