@@ -22,14 +22,14 @@ end() {
 # kubectl apply -f namespace.yaml
 # end
 
-msg "Deploying metrics-server..."
-helm template \
-  --name metrics-server \
-  --namespace kube-system \
-  charts/metrics-server > \
-  templated.yaml
-kubectl apply -n kube-system -f templated.yaml
-end
+# msg "Deploying metrics-server..."
+# helm template \
+#   --name metrics-server \
+#   --namespace kube-system \
+#   charts/metrics-server > \
+#   templated.yaml
+# kubectl apply -n kube-system -f templated.yaml
+# end
 
 # msg "Deploying nfs server..."
 # helm template \
@@ -40,18 +40,14 @@ end
 # kubectl apply -n kube-system -f templated.yaml
 # end
 
-# msg "Deploying db..."
-# helm template \
-#   --name mariadb \
-#   --namespace wp \
-#   --set mariadb.rootUser.password=$ROOT_PASSWORD \
-#   --set mariadb.db.password=$USER_PASSWORD \
-#   --set mariadb.replication.password=$REPLICATION_PASSWORD \
-#   charts/mariadb > \
-#   templated.yaml
-# kubectl apply -n wp -f templated.yaml
-# end
-
-# msg "Creating pvc..."
-# kubectl apply -f namespace.yaml
-# end
+msg "Deploying db..."
+helm template \
+  --name mariadb \
+  --namespace wp \
+  --set mariadb.rootUser.password=$ROOT_PASSWORD \
+  --set mariadb.db.password=$USER_PASSWORD \
+  --set mariadb.replication.password=$REPLICATION_PASSWORD \
+  charts/mariadb > \
+  templated.yaml
+kubectl apply -n wp -f templated.yaml
+end

@@ -10,6 +10,12 @@ Metrics:
 * CPU 80%
 * rps?
 
+## Local limitations
+
+* disabled metrics for mariadb
+* nfs -> managed
+* mysql -> managed
+
 https://github.com/hipages/php-fpm_exporter
 
 wordpress_files:/var/www/html

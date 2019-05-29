@@ -40,7 +40,8 @@ mariadb:
         memory: 256Mi
 
   metrics:
-    enabled: true
+    # disabled as of short resources locally
+    enabled: false
     resources:
       limits:
         cpu: 50m
