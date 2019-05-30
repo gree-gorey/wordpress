@@ -19,7 +19,7 @@ end() {
 }
 
 msg "Creating namespace..."
-kubectl apply -f namespace.yaml
+kubectl apply -f ./manifests/namespace.yaml
 end
 
 msg "Deploying metrics-server..."
@@ -29,6 +29,8 @@ helm template \
   charts/metrics-server > \
   templated.yaml
 kubectl apply -n kube-system -f templated.yaml
+# clean up test pods
+kubectl delete po -n kube-system metrics-server-test --wait=false
 end
 
 msg "Deploying nfs server..."
@@ -50,9 +52,12 @@ helm template \
   charts/mariadb > \
   templated.yaml
 kubectl apply -n wp -f templated.yaml
+# clean up test pods
+TEST_POD=$(kubectl get po -n wp -o custom-columns=NAME:.metadata.name | grep mariadb-test)
+kubectl delete po -n wp $TEST_POD --wait=false
 end
 
-msg "Deploying wp (with large-ish CPU limits)..."
+msg "Deploying wordpress (with large-ish CPU limits)..."
 helm template \
   --name wp \
   --namespace wp \

@@ -67,9 +67,14 @@ The deployment script assumes the following:
 2. Check that you have the apps running:
 ```console
 $ kubectl get po -n kube-system -l 'app in (nfs, metrics-server)'
-output
+metrics-server-7f6b4744c-tlp6s   1/1     Running   0          47s
+nfs-0                            1/1     Running   0          45s
 $ kubectl get po -n wp
-o
+NAME                        READY   STATUS    RESTARTS   AGE
+mariadb-master-0            1/1     Running   0          3m34s
+mariadb-slave-0             1/1     Running   0          3m34s
+mariadb-slave-1             1/1     Running   0          2m24s
+wordpress-f8dcf7d8d-96n8p   2/2     Running   0          3m33s
 ```
 
 3. Now we can use `port-forward` to see the application UI:
