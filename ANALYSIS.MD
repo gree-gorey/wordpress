@@ -25,7 +25,7 @@ This document consists of thee parts:
   * `mariadb` -- just `stable/mariadb` Chart with my custom values. Using master + slave replication for HA and redundancy
   * `metrics-server` -- `stable/metrics-server` Chart with my custom values. Used for autoscaling based on resource metrics (e.g. CPU load)
   * `nfs-server-provisioner` -- `stable/nfs-server-provisioner` Chart with my custom values. RWX storage is a requirement for using WordPress in replicated mode due to its stateful nature (discussion below). This chart provides local NFS-server
-  * `wordpress` -- Chart for WordPress app. This one is created by me and contains of the following templates:
+  * `wordpress` -- Chart for WordPress app. This one is created by me and contains the following templates:
 
     * `configmap.yaml` -- contains Nginx config file
     * `deployment.yaml` -- Deployment with Pod consisting of two containers: 1) my `greegorey/wordpress:1.0.0` image with WordPress files and PHP-FPM and 2) `nginx:1.15-alpine` for serving the requests (implementation details below)
@@ -50,7 +50,7 @@ Kubernetes node capacity: `cpu: 2; memory: 6100628Ki (6GiB)`
 ### Deploy
 
 The deployment script assumes the following:
-* you are running this script from the root of the repo
+* you are running this script from the root of this repo
 * you have `kubectl` and `helm` client installed
 * you have valid `~/.kube/config` file or you have `$KUBECONFIG` env variable pointing to the right config
 * you have the StorageClass object named `hostpath` (default with Docker for Mac). If not, the manifest is under the `./manifests/storage-class.yaml`
@@ -115,49 +115,48 @@ deployment.apps/load-test created
 
 5. After some small time you can see that CPU consumption of wordpress pod increases:
 ```console
-$ kubectl top po -l app=wordpress
-kubectl top po -l app=wordpress --containers
+$ kubectl top po -n wp -l app=wordpress --containers
 POD                          NAME        CPU(cores)   MEMORY(bytes)   
 wordpress-7b79f7f484-c74x5   wordpress   100m         10Mi            
 wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
 
-$ kubectl get hpa
+$ kubectl get hpa -n wp wordpress-hpa
 NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 wordpress-hpa   Deployment/wordpress   91%/70%   1         5         2          18m
 ```
 And HPA increases the replicas of wordpress:
 ```console
-$ kubectl get po -l app=wordpress
+$ kubectl get po -n wp -l app=wordpress
 NAME                         READY   STATUS    RESTARTS   AGE
 wordpress-7b79f7f484-6wz8r   2/2     Running   0          84s
 wordpress-7b79f7f484-c74x5   2/2     Running   0          3m3s
 
-$ kubectl top po -l app=wordpress --containers
+$ kubectl top po -n wp -l app=wordpress --containers
 POD                          NAME        CPU(cores)   MEMORY(bytes)   
 wordpress-7b79f7f484-6wz8r   wordpress   69m          10Mi            
 wordpress-7b79f7f484-6wz8r   nginx       1m           1Mi             
 wordpress-7b79f7f484-c74x5   wordpress   42m          10Mi            
 wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
 
-$ kubectl get hpa
+$ kubectl get hpa -n wp wordpress-hpa
 NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 wordpress-hpa   Deployment/wordpress   51%/70%   1         5         2          20m
 ```
 6. Scale down the load-test Deployment to 0 and watch that HPA scale-down the wordpress:
 ```console
-$ kubectl scale deployment load-test --replicas=0
+$ kubectl scale deployment -n wp load-test --replicas=0
 deployment.extensions/load-test scaled
 
-$ kubectl top po -l app=wordpress --containers
+$ kubectl top po -n wp -l app=wordpress --containers
 POD                          NAME        CPU(cores)   MEMORY(bytes)   
 wordpress-7b79f7f484-6wz8r   wordpress   1m           10Mi            
 wordpress-7b79f7f484-6wz8r   nginx       1m           1Mi             
 
-$ kubectl get hpa
+$ kubectl get hpa -n wp wordpress-hpa
 NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
 wordpress-hpa   Deployment/wordpress   1%/70%    1         5         1          32m
 
-$ kubectl get po -l app=wordpress
+$ kubectl get po -n wp -l app=wordpress
 NAME                         READY   STATUS    RESTARTS   AGE
 wordpress-7b79f7f484-c74x5   2/2     Running   0          9m54s
 ```
@@ -165,14 +164,14 @@ wordpress-7b79f7f484-c74x5   2/2     Running   0          9m54s
 ## 3. Discussion
 
 First of all, WordPress is quite a complicated application to run in Kubernetes. It's stateful, meaning that you should share the files that user can upload there through UI between the replicas -- that making the replication difficult. One of the solutions is to use Write-Read-Many volumes for those files, e.g. it can be done with NFS. For the simplicity of local development and demo purposes I didn't mount nfs volumes into `/var/www/html` -- it would slow down the whole process. I just used emptyDir to share these files between nginx container and wordpress container.  
-Ideally, all the static files should go to CDN, or at least to s3 and just served by nginx or other reverse-proxy. All the code (static php-files) should be build into container image on build stage. All the dynamic contant (user uploads, dynamic modules) should go to RWX volumes shared between all the replicas.
+Ideally, all the static files should go to CDN, or at least to s3 and just served by nginx or other reverse-proxy. All the code (static php-files) should be build into container image on build stage. All the dynamic content (user uploads, dynamic modules) should go to RWX volumes shared between all the replicas.
 
 ### What to change on production
 * if we had to use NFS, I would go for managed solution, like AWS EFS
 * I would use managed SQL instead of mariadb in k8s cluster. It is scalable and HA right now, but it's better to use managed db if possible
 * add https. At least with LetsEncrypt certificates. (not possible locally because you need at least DNS for that)
-* I disabled metrics for mariadb because of short resources. They should be enabeled in production and can be used for scaling of the database
-* of course, HPA without cluster autoscaler is of little use. E.g. on GKE is built-in, on other clouds I would deploy this chart: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
+* I disabled metrics for mariadb because of short resources. They should be enabled in production and can be used for scaling of the database
+* of course, HPA without cluster autoscaler is of little use. E.g. on GKE it's built-in, on other clouds I would deploy this chart: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
 
 #### Horizontal Pod Autoscaler
 Right now it's using only CPU utilisation of pods; but we could use some more http specific metrics, e.g. rps or latency.  
