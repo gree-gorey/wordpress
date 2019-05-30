@@ -55,16 +55,16 @@ The deployment script assumes the following:
 * you have valid `~/.kube/config` file or you have `$KUBECONFIG` env variable pointing to the right config
 * you have the StorageClass object named `hostpath` (default with Docker for Mac). If not, the manifest is under the `./manifests/storage-class.yaml`
 
-Disclaimer: `deploy-local.sh` script has "secret" variables with passwords -- this is for local development only. Of course, in production these variables come from safe location.
+*Disclaimer*: `deploy-local.sh` script has "secret" variables with passwords -- this is for local development only. Of course, in production these variables come from safe location.
 
-Just run the `deploy-local.sh`. What it does:
+1. Run the `deploy-local.sh`. What it does:
 * creates namespace `wp`
 * deploys metrics-server to `kube-system` namespace
 * deploys nfs-server-provisioner to `kube-system` namespace
 * deploys database to `wp` namespace
 * deploys wordpress tp `wp` namespace
 
-Check that you have the apps running:
+2. Check that you have the apps running:
 ```console
 $ kubectl get po -n kube-system -l 'app in (nfs, metrics-server)'
 output
@@ -72,14 +72,14 @@ $ kubectl get po -n wp
 o
 ```
 
-Now we can use `port-forward` to see the application UI:
+3. Now we can use `port-forward` to see the application UI:
 ```console
 $ kubectl port-forward -n wp svc/wordpress 8080:80
 Forwarding from 127.0.0.1:8080 -> 80
 Forwarding from [::1]:8080 -> 80
 ```
 
-Open http://127.0.0.1:8080 in the browser and you can perform initial setup for WordPress.
+4. Open http://127.0.0.1:8080 in the browser and you can perform initial setup for WordPress.
 
 ## 3. Discussion
 
