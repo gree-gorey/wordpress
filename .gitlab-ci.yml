@@ -3,22 +3,39 @@ image: greegorey/ci:1.0.0
 stages:
   - build
   - helm lint
-  - apply namespace
-  - deploy nfs
-  - deploy db
-  - deploy wp
+  - prepare
+  - deploy
+
+# I don't use proper tags here, it's just for demo
+# NOTE: push won't work because the lack of auth credentials
+.build: &build
+  script:
+    - docker build -t $REPOSITORY:$TAG -f ./images/$DIR/Dockerfile ./images/$DIR
+    - docker push $REPOSITORY:$TAG
 
 build ci image:
+  variables:
+    DIR: ci
+    REPOSITORY: greegorey/ci
+    TAG: 1.0.0
   stage: build
-  script:
-    - docker build
-    - docker push
+  <<: *build
+
+build load-test image:
+  variables:
+    DIR: load-test
+    REPOSITORY: greegorey/load-test
+    TAG: 1.0.0
+  stage: build
+  <<: *build
 
 build wp image:
+  variables:
+    DIR: wordpress
+    REPOSITORY: greegorey/wordpress
+    TAG: 1.0.0
   stage: build
-  script:
-    - docker build
-    - docker push
+  <<: *build
 
 helm lint:
   stage: helm lint
@@ -32,16 +49,31 @@ helm lint:
     - echo $KUBECONFIG_B64 | base64 --decode > ~/.kube/config
 
 apply namespace:
-  stage: apply namespace
+  stage: prepare
   <<: *k8s
   script:
     - kubectl apply
-      --filename namespace.yaml
+      --filename ./manifests/namespace.yaml
+
+# TODO:
+# - kubectl rollout status --namespace kube-system statefulset/nfs --watch
+deploy metrics-server:
+  stage: prepare
+  <<: *k8s
+  script:
+    - helm template
+      --name nfs
+      --namespace kube-system
+      charts/metrics-server >
+      templated.yaml
+    - kubectl apply
+      --namespace kube-system
+      --filename templated.yaml
 
 # TODO:
 # - kubectl rollout status --namespace kube-system statefulset/nfs --watch
 deploy nfs:
-  stage: deploy nfs
+  stage: prepare
   <<: *k8s
   script:
     - helm template
@@ -61,13 +93,14 @@ deploy nfs:
 # - kubectl rollout status --namespace wp statefulset/mariadb-master --watch
 # - kubectl rollout status --namespace wp statefulset/mariadb-slave --watch
 deploy db:
-  stage: deploy db
+  stage: deploy
   <<: *k8s
   script:
     - helm template
       --name mariadb
       --namespace wp
       --set mariadb.rootUser.password=$ROOT_PASSWORD
+      --set mariadb.db.password=$USER_PASSWORD
       --set mariadb.replication.password=$REPLICATION_PASSWORD
       charts/mariadb >
       templated.yaml
@@ -76,12 +109,13 @@ deploy db:
       --filename templated.yaml
 
 deploy wp:
-  stage: deploy wp
+  stage: deploy
   <<: *k8s
   script:
     - helm template
       --name wordpress
       --namespace wp
+      --set db.password=$USER_PASSWORD
       charts/wordpress >
       templated.yaml
     - kubectl apply

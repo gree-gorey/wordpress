@@ -41,7 +41,7 @@ db:
   name: wordpress
   host: mariadb:3306
   user: wordpress
-  password:
+  password: secret=
   tablePrefix: "wp_"
 
 resources:
