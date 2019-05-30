@@ -162,7 +162,22 @@ NAME                         READY   STATUS    RESTARTS   AGE
 wordpress-7b79f7f484-c74x5   2/2     Running   0          9m54s
 ```
 
-
 ## 3. Discussion
 
-* https
+First of all, WordPress is quite a complicated application to run in Kubernetes. It's stateful, meaning that you should share the files that user can upload there through UI between the replicas -- that making the replication difficult. One of the solutions is to use Write-Read-Many volumes for those files, e.g. it can be done with NFS. For the simplicity of local development and demo purposes I didn't mount nfs volumes into `/var/www/html` -- it would slow down the whole process. I just used emptyDir to share these files between nginx container and wordpress container.  
+Ideally, all the static files should go to CDN, or at least to s3 and just served by nginx or other reverse-proxy. All the code (static php-files) should be build into container image on build stage. All the dynamic contant (user uploads, dynamic modules) should go to RWX volumes shared between all the replicas.
+
+### What to change on production
+* if we had to use NFS, I would go for managed solution, like AWS EFS
+* I would use managed SQL instead of mariadb in k8s cluster. It is scalable and HA right now, but it's better to use managed db if possible
+* add https. At least with LetsEncrypt certificates. (not possible locally because you need at least DNS for that)
+* I disabled metrics for mariadb because of short resources. They should be enabeled in production and can be used for scaling of the database
+* of course, HPA without cluster autoscaler is of little use. E.g. on GKE is built-in, on other clouds I would just deploy this: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
+
+#### Horizontal Pod Autoscaler
+Metrics:
+* CPU 70%
+* rps?
+
+
+https://github.com/hipages/php-fpm_exporter
