@@ -172,12 +172,20 @@ Ideally, all the static files should go to CDN, or at least to s3 and just serve
 * I would use managed SQL instead of mariadb in k8s cluster. It is scalable and HA right now, but it's better to use managed db if possible
 * add https. At least with LetsEncrypt certificates. (not possible locally because you need at least DNS for that)
 * I disabled metrics for mariadb because of short resources. They should be enabeled in production and can be used for scaling of the database
-* of course, HPA without cluster autoscaler is of little use. E.g. on GKE is built-in, on other clouds I would just deploy this: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
+* of course, HPA without cluster autoscaler is of little use. E.g. on GKE is built-in, on other clouds I would deploy this chart: https://github.com/helm/charts/tree/master/stable/cluster-autoscaler
 
 #### Horizontal Pod Autoscaler
-Metrics:
-* CPU 70%
-* rps?
-
-
-https://github.com/hipages/php-fpm_exporter
+Right now it's using only CPU utilisation of pods; but we could use some more http specific metrics, e.g. rps or latency.  
+I would expand HPA with custom metrics like this:
+```yaml
+spec:
+  metrics:
+  - type: Pods
+    pods:
+      metricName: wordpress_latency_ms
+      targetAverageValue: 100
+```
+For this to work we need additionaly 3 things:
+* exporter to export these kind of metrics from our app, e.g. https://github.com/hipages/php-fpm_exporter
+* Prometheus server to collect them: https://github.com/helm/charts/tree/master/stable/prometheus
+* and adapter allowing to use HPA with custom metrics: https://github.com/helm/charts/tree/master/stable/prometheus-adapter

@@ -61,6 +61,8 @@ spec:
         # TODO
         # - name: nfs
         #   mountPath: /var/www/html
+        #
+        # We need this to copy all the data from image to volume
         lifecycle:
           postStart:
             exec:
