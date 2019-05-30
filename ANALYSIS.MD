@@ -53,6 +53,7 @@ The deployment script assumes the following:
 * you are running this script from the root of the repo
 * you have `kubectl` and `helm` client installed
 * you have valid `~/.kube/config` file or you have `$KUBECONFIG` env variable pointing to the right config
+* you have the StorageClass object named `hostpath` (default with Docker for Mac). If not, the manifest is under the `./manifests/storage-class.yaml`
 
 Disclaimer: `deploy-local.sh` script has "secret" variables with passwords -- this is for local development only. Of course, in production these variables come from safe location.
 
