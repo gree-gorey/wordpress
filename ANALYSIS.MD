@@ -100,7 +100,7 @@ $ kubectl apply -n wp -f manifests/hpa.yaml
 horizontalpodautoscaler.autoscaling/wordpress-hpa created
 ```
 
-3. After some time you can see the resource consumption:
+3. After some time you can see the (low) resource consumption:
 ```console
 $ kubectl get -n wp hpa wordpress-hpa
 NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
@@ -152,8 +152,10 @@ $ kubectl top po -l app=wordpress --containers
 POD                          NAME        CPU(cores)   MEMORY(bytes)   
 wordpress-7b79f7f484-6wz8r   wordpress   1m           10Mi            
 wordpress-7b79f7f484-6wz8r   nginx       1m           1Mi             
-wordpress-7b79f7f484-c74x5   wordpress   1m           10Mi            
-wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
+
+$ kubectl get hpa
+NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+wordpress-hpa   Deployment/wordpress   1%/70%    1         5         1          32m
 
 $ kubectl get po -l app=wordpress
 NAME                         READY   STATUS    RESTARTS   AGE
