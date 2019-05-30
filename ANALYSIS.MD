@@ -1,9 +1,9 @@
 # Analysis
 
 This document consists of thee parts:
-1. [Deliverables](#Deliverables), where I describe the layout of this repo and all the code it contains.
-2. [Walkthrough](#Walkthrough), where I walk you through the deployment of the app and all the components, as well as demo of load-testing and autoscaling.
-3. [Discussion](#Discussion), where I discuss all the work I've done; why I choose these solutions and what is need to be improved/done differently in production environment.
+1. [Deliverables](#1-deliverables), where I describe the layout of this repo and all the code it contains.
+2. [Walkthrough](#2-walkthrough), where I walk you through the deployment of the app and all the components, as well as demo of load-testing and autoscaling.
+3. [Discussion](#3-discussion), where I discuss all the work I've done; why I choose these solutions and what is need to be improved/done differently in production environment.
 
 ## 1. Deliverables
 ### Docker images
