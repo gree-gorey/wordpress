@@ -49,4 +49,26 @@ Kubernetes node capacity: `cpu: 2; memory: 6100628Ki (6GiB)`
 
 ### Deploy
 
+The deployment script assumes the following:
+* you are running this script from the root of the repo
+* you have `kubectl` and `helm` client installed
+* you have valid `~/.kube/config` file or you have `$KUBECONFIG` env variable pointing to the right config
+
+Disclaimer: `deploy-local.sh` script has "secret" variables with passwords -- this is for local development only. Of course, in production these variables come from safe location.
+
+Just run the `deploy-local.sh`. What it does:
+* creates namespace `wp`
+* deploys metrics-server to `kube-system` namespace
+* deploys nfs-server-provisioner to `kube-system` namespace
+* deploys database to `wp` namespace
+* deploys wordpress tp `wp` namespace
+
+Check that you have the apps running:
+```console
+$ kubectl get po -n kube-system -l 'app in (nfs, metrics-server)'
+output
+$ kubectl get po -n wp
+o
+```
+
 ## 3. Discussion
