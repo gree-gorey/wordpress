@@ -29,20 +29,20 @@ spec:
         - name: fpm
           containerPort: 9000
           protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /index.php
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /index.php
-            port: 80
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 10
+        # livenessProbe:
+        #   httpGet:
+        #     path: /index.php
+        #     port: 80
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 30
+        #   timeoutSeconds: 10
+        # readinessProbe:
+        #   httpGet:
+        #     path: /index.php
+        #     port: 80
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   timeoutSeconds: 10
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
         env:

@@ -1,3 +1,4 @@
 .envrc
 templated.yaml
 log.sh
+ns.sh

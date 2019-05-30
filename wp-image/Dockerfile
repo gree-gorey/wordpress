@@ -8,6 +8,6 @@ FROM php:7.2-fpm-alpine3.8
 RUN mkdir -p /wp-files
 RUN docker-php-ext-install mysqli
 COPY --from=clone /repo /wp-files
-ADD ./wp-config.php /wp-files/
+ADD ./*.php /wp-files/
 EXPOSE 9000
 CMD ["php-fpm"]
