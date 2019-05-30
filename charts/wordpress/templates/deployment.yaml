@@ -81,6 +81,8 @@ spec:
         readinessProbe:
           tcpSocket:
             port: 80
+        resources:
+          {{- toYaml .Values.nginxResources | nindent 10 }}
         volumeMounts:
         - name: shared
           mountPath: /var/www/html

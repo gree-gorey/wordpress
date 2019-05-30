@@ -4,7 +4,7 @@ metadata:
   name: load-test
   namespace: wp
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: load-test

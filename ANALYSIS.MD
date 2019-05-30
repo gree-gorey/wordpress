@@ -86,6 +86,81 @@ Forwarding from [::1]:8080 -> 80
 
 4. Open http://127.0.0.1:8080 in the browser and you can perform initial setup for WordPress.
 
+### Autoscaling demo
+
+1. Let's lower cpu requests and limits of wordpress deployment down to 100m:
+```console
+$ kubectl patch -n wp deploy wordpress --patch "$(cat manifests/patch-cpu-limits.yaml)"
+deployment.extensions/wordpress patched
+```
+
+2. Deploy Horizontal Pod Autoscaler:
+```console
+$ kubectl apply -n wp -f manifests/hpa.yaml
+horizontalpodautoscaler.autoscaling/wordpress-hpa created
+```
+
+3. After some time you can see the resource consumption:
+```console
+$ kubectl get -n wp hpa wordpress-hpa
+NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+wordpress-hpa   Deployment/wordpress   1%/70%    1         5         1          1m57s
+```
+
+4. Now deploy the load-test Deployment. It contains a client that requests `/simulate-cpu-load.php` of our wordpress app making it consume cpu:
+```console
+$ kubectl apply -n wp -f manifests/load-test-deployment.yaml
+deployment.apps/load-test created
+```
+
+5. After some small time you can see that CPU consumption of wordpress pod increases:
+```console
+$ kubectl top po -l app=wordpress
+kubectl top po -l app=wordpress --containers
+POD                          NAME        CPU(cores)   MEMORY(bytes)   
+wordpress-7b79f7f484-c74x5   wordpress   100m         10Mi            
+wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
+
+$ kubectl get hpa
+NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+wordpress-hpa   Deployment/wordpress   91%/70%   1         5         2          18m
+```
+And HPA increases the replicas of wordpress:
+```console
+$ kubectl get po -l app=wordpress
+NAME                         READY   STATUS    RESTARTS   AGE
+wordpress-7b79f7f484-6wz8r   2/2     Running   0          84s
+wordpress-7b79f7f484-c74x5   2/2     Running   0          3m3s
+
+$ kubectl top po -l app=wordpress --containers
+POD                          NAME        CPU(cores)   MEMORY(bytes)   
+wordpress-7b79f7f484-6wz8r   wordpress   69m          10Mi            
+wordpress-7b79f7f484-6wz8r   nginx       1m           1Mi             
+wordpress-7b79f7f484-c74x5   wordpress   42m          10Mi            
+wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
+
+$ kubectl get hpa
+NAME            REFERENCE              TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+wordpress-hpa   Deployment/wordpress   51%/70%   1         5         2          20m
+```
+6. Scale down the load-test Deployment to 0 and watch that HPA scale-down the wordpress:
+```console
+$ kubectl scale deployment load-test --replicas=0
+deployment.extensions/load-test scaled
+
+$ kubectl top po -l app=wordpress --containers
+POD                          NAME        CPU(cores)   MEMORY(bytes)   
+wordpress-7b79f7f484-6wz8r   wordpress   1m           10Mi            
+wordpress-7b79f7f484-6wz8r   nginx       1m           1Mi             
+wordpress-7b79f7f484-c74x5   wordpress   1m           10Mi            
+wordpress-7b79f7f484-c74x5   nginx       1m           1Mi
+
+$ kubectl get po -l app=wordpress
+NAME                         READY   STATUS    RESTARTS   AGE
+wordpress-7b79f7f484-c74x5   2/2     Running   0          9m54s
+```
+
+
 ## 3. Discussion
 
 * https
