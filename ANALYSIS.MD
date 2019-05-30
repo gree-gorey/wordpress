@@ -41,10 +41,10 @@ In order to automate the deployment locally I created a simple bash script `depl
 ## 2. Walkthrough
 
 ### My local env:
-Kubectl version: `v1.14.0`
-Helm client version: `v2.14.0`
-Docker version: `19.03.0-beta3`
-Kubernetes: `v1.14.1` (built-in from Docker for Mac)
+Kubectl version: `v1.14.0`  
+Helm client version: `v2.14.0`  
+Docker version: `19.03.0-beta3`  
+Kubernetes: `v1.14.1` (built-in from Docker for Mac)  
 Kubernetes node capacity: `cpu: 2; memory: 6100628Ki (6GiB)`
 
 ### Deploy
