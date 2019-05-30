@@ -5,6 +5,11 @@
 
 ## Scaling
 
+Note: wordpress Deployment Pods have 200m CPU limits -- that's intentionally for
+the purposes of HPA demo: firstly, larger CPU limits just wouldn't fit into
+local CPU limits when scaling up; and secondly, the lesser the limit the easier
+to load CPU with calculations.
+
 Horizontal Pod Autoscaler
 Metrics:
 * CPU 80%
@@ -17,31 +22,3 @@ Metrics:
 * mysql -> managed
 
 https://github.com/hipages/php-fpm_exporter
-
-wordpress_files:/var/www/html
-
-10Mil
-
-for($i = 0; $i < 10000000; $i++) {
-     $a += $i;
-}
-
-
-server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-
-  root /var/www/html;
-  server_name _;
-
-  location / {
-    try_files $uri $uri/ =404;
-  }
-
-  location ~ \.php$ {
-    include fastcgi_params;
-    fastcgi_param REQUEST_METHOD $request_method;
-    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    fastcgi_pass 127.0.0.1:9000;
-  }
-}

@@ -13,4 +13,5 @@ for($i = 0; $i < 10000000; $i++) {
      $num += $i;
 };
 
+header('Content-Type: application/json');
 echo sprintf('{"num": %d}', $num);

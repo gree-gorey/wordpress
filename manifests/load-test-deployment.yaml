@@ -20,4 +20,4 @@ spec:
         - name: HOST
           value: wordpress:80
         - name: URI
-          value: /wp-admin/install.php
+          value: /simulate-cpu-load.php
