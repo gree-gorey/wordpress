@@ -71,4 +71,15 @@ $ kubectl get po -n wp
 o
 ```
 
+Now we can use `port-forward` to see the application UI:
+```console
+$ kubectl port-forward -n wp svc/wordpress 8080:80
+Forwarding from 127.0.0.1:8080 -> 80
+Forwarding from [::1]:8080 -> 80
+```
+
+Open http://127.0.0.1:8080 in the browser and you can perform initial setup for WordPress.
+
 ## 3. Discussion
+
+* https
